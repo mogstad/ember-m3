@@ -110,23 +110,27 @@ export default class MegamorphicModel extends EmberObject {
   _setIdentifier(identifier) {
     if (CUSTOM_MODEL_CLASS) {
       this._identifier = identifier;
-      this._store.getRequestStateService().subscribeForRecord(this._identifier, request => {
-        if (request.state === 'rejected') {
-          // TODO filter out queries
-          this._lastErrorRequest = request;
-          if (!(request.result && isInvalidError(request.result.error))) {
-            this._errorRequests.push(request);
-          } else {
-            this._invalidRequests.push(request);
-          }
-        } else if (request.state === 'fulfilled') {
-          this._invalidRequests = [];
-          this._errorRequests = [];
-          this._lastErrorRequest = null;
-        }
-        this._notifyNetworkChanges();
-      });
+      this._subscribeToErrors();
     }
+  }
+
+  _subscribeToErrors() {
+    this._store.getRequestStateService().subscribeForRecord(this._identifier, request => {
+      if (request.state === 'rejected') {
+        // TODO filter out queries
+        this._lastErrorRequest = request;
+        if (!(request.result && isInvalidError(request.result.error))) {
+          this._errorRequests.push(request);
+        } else {
+          this._invalidRequests.push(request);
+        }
+      } else if (request.state === 'fulfilled') {
+        this._invalidRequests = [];
+        this._errorRequests = [];
+        this._lastErrorRequest = null;
+      }
+      this._notifyNetworkChanges();
+    });
   }
 
   _notifyNetworkChanges() {
@@ -701,6 +705,8 @@ export class EmbeddedMegamorphicModel extends MegamorphicModel {
     );
   }
 
+  _subscribeToErrors() {}
+
   unloadRecord() {
     warn(
       `Nested models cannot be directly unloaded.  Perhaps you meant to unload the top level model, '${this._topModel._modelName}:${this._topModel.id}'`,
@@ -743,6 +749,16 @@ export class EmbeddedMegamorphicModel extends MegamorphicModel {
   serialize(options) {
     return this._store.serializerFor('-ember-m3').serialize(new EmbeddedSnapshot(this), options);
   }
+}
+
+if (CUSTOM_MODEL_CLASS) {
+  defineProperty(
+    EmbeddedMegamorphicModel.prototype,
+    'isSaving',
+    computed('_topModel.isSaving', function(key) {
+      return this._topModel.isSaving;
+    }).readOnly()
+  );
 }
 
 export class EmbeddedSnapshot {
