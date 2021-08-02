@@ -56,7 +56,6 @@ module('unit/model/errors-attribute', function (hooks) {
           type: 'com.example.bookstore.Book',
           attributes: {
             author: ['urn:author:1'],
-            title: 'Harry Potter',
             errors: errorsArray,
           },
         },
@@ -66,14 +65,6 @@ module('unit/model/errors-attribute', function (hooks) {
       get(model, 'errors').get('firstObject'),
       errorsArray[0],
       "schema's useUnderlyingErrorsValue value set to true should return payload errors array"
-    );
-
-    model.set('title', 'Goblin');
-
-    assert.deepEqual(
-      get(model, 'errors').get('firstObject'),
-      errorsArray[0],
-      'errors should still be accessible after setting a property'
     );
   });
 
