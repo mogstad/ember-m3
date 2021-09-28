@@ -110,10 +110,9 @@ if (CUSTOM_MODEL_CLASS) {
       return true;
     }
   };
+  megamorphicModelProxyHandler = new MegamorphicModelProxyHandler();
 
   if (DEBUG) {
-    megamorphicModelProxyHandler = new MegamorphicModelProxyHandler();
-
     const MegamorphicNativeDeprecationProxyHandler = class {
       // Need to implement the getter for the Ember Proxy assertions to work
       get(target, key) {
